@@ -1,0 +1,140 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+
+decathlon_clean <- read_csv(here::here("clean_data/decathlon_clean.csv"))
+```
+
+# Q1. Who had the longest long jump seen in the data?
+```{r}
+decathlon_clean %>% 
+  select(athlete_name, competition, event, score) %>% 
+  filter(event == "long_jump") %>% 
+  slice_max(score)
+
+# Comment: 
+# Was Clay in OlympicG with a jump of 7.96 meters.
+```
+
+# Q2. What was the average 100m time in each competition?
+```{r}
+decathlon_clean %>%
+  select(competition, event, score) %>% 
+  filter(event == "100_m") %>% 
+  group_by(competition) %>% 
+  summarise(avg_100_m_per_competition = 
+              as.numeric(format(mean(score), digits = 5))
+  ) 
+
+# Comment: 
+# In Decastar competition the average of 100m event was 11.175 and in
+# OlympicG competition was 10.916.
+```
+In Decastar competition the average of 100m event was 11.175 and in
+OlympicG competition was 10.916.
+
+
+# Q3. Who had the highest total points across both competitions?
+```{r}
+decathlon_clean %>%
+  select(athlete_name, competition, points) %>% 
+  group_by(competition) %>% 
+  arrange(desc(points)) %>% 
+  head(1) 
+
+# Comments:
+# Was the athlete Sebrle in OlympicG competition with a total of 8893  points.
+```
+Was the athlete Sebrle in OlympicG competition with a total of 8893  points.
+
+# Q4. What was the shot-put scores for the top 3 competitors in each competition?
+```{r}
+decathlon_clean %>% 
+  select(athlete_name, competition, event, score) %>% 
+  filter(event == "shot_put") %>% 
+  group_by(competition) %>% 
+  slice_max(score, n = 3) %>% 
+  arrange(desc(score))
+```
+ Comments:
+    In OlympicG competition, in first was Karpov with 16.36, in second Karpov
+ with 15.93 and in third Macey with 15.73.
+
+    In Decastar competition, in first was Karpov with 16.36, in second Karpov
+ with 15.93 and in third Macey with 15.73.
+
+Q5. What was the average points for competitors who ran the 400m in less than 50 seconds vs. those than ran 400m in more than 50 seconds?
+
+```{r}
+# This function allow us to know what is the mean for who ran above and bellow 
+# of a certain time (in seconds) in a 400m event.
+#  --Arguments-- 
+#    1) data_frame:   insert which data frame we are using
+#    2) select_score: insert the time (seconds) that you want (e.g. 50, 49...)
+#    
+#  -- Details --
+#     For select_score argument, the values just be numeric and between the 
+#  range of values that exist in the current data frame.
+
+my_function <- function(data_frame, select_score){
+  library(assertr)
+  
+  # 1 - Ensure inserted score is between range values that are in table
+  # 1.1 - Find out what is the higher score value
+  max_400m_score <- data_frame %>%
+    filter(event == "400_m") %>% 
+    slice_max(score) %>% 
+    pull()
+  
+  # 1.2 - Find out what is the lower score value
+  min_400m_score <- data_frame %>%
+    filter(event == "400_m") %>% 
+    slice_min(score) %>% 
+    pull()
+  
+  data_frame %>%
+    verify(between(select_score, min_400m_score, max_400m_score))
+  
+  # 2 - add a condition, that makes sure just ONLY in numeric input
+  if (!is.numeric(select_score)){
+    stop("A non-numeric value was inserted. Just numeric values are allowed")
+  }
+  
+  # 3 - Calculate the average points values
+  # 3.1 - Average points values for who run bellow select_score seconds
+  mean_points_below_400m <- data_frame %>% 
+    filter(event == "400_m" & score < select_score) %>% 
+    summarise(mean_score_below_50_sec = 
+                as.numeric(format(mean(points)), digits = 7)) %>% 
+    pull()
+  
+  # 3.2 - Average points values for who run above select_score seconds
+  mean_points_above_400m <- data_frame %>% 
+    filter(event == "400_m" & score > select_score) %>% 
+    summarise(mean_score_below_50_sec = 
+                as.numeric(format(mean(points)),digits = 7)) %>% 
+    pull() 
+    
+  
+  # 4 - Output
+  # 4.1 - Writen output
+  phrase <- paste("The average points for who ran the 400 meters bellow", select_score, "was", mean_points_below_400m, "and for who ran above", select_score, " was", mean_points_above_400m)
+  
+  print(phrase)
+  
+  #4.2 - Table output
+  table <- bind_rows(
+    c(label = str_c("bellow_", select_score), mean_points = mean_points_below_400m),
+    c(label = str_c("above_", select_score),  mean_points = mean_points_above_400m)
+  )
+  return(table)
+  
+}
+
+my_function(decathlon_clean, 50)
+```

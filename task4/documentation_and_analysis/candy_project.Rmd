@@ -1,0 +1,88 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+candy_data_clean <- read_csv(here::here("clean_data/candy_data_clean.csv"))
+```
+
+#Q1: What is the total number of candy ratings given across the three years?
+```{r}
+candy_drop_na_answer <- candy_data_clean %>% 
+  drop_na(answer)
+
+
+candy_drop_na_answer %>% 
+  summarise(count_candy_rated = sum(n()))
+```
+Had rating 630368	candy's across the three years, since 2015 to 2017.
+
+
+
+#Q2: What was the average age of people who are going out trick or treating?
+```{r}
+candy_drop_na_age <- candy_data_clean %>% 
+   drop_na(age)
+
+candy_drop_na_age %>% 
+  filter(going_out == TRUE) %>% 
+  summarise(avr_age_going_out = mean(age))
+```
+The average of people who are going out trick or treating was 34,9 years old.
+
+
+
+#Q3 :What was the average age of people who are not going trick or treating?
+```{r}
+candy_drop_na_age %>% 
+  filter(going_out == FALSE) %>% 
+  summarise(avr_age_not_going_out = mean(age))
+```
+The average of people who are not going out trick or treating was 39 years old.
+
+
+
+#Q4: For each of joy, despair and meh, which candy bar received the most of these ratings?
+```{r}
+higher_candy_joy <- candy_drop_na_answer %>% 
+  filter(answer == "JOY") %>% 
+  group_by(candy) %>% 
+  summarise(count_higher_joy = sum(n())) %>% 
+  arrange(desc(count_higher_joy)) %>% 
+  head(1)
+
+higher_candy_despair <- candy_drop_na_answer %>% 
+  filter(answer == "DESPAIR") %>% 
+  group_by(candy) %>% 
+  summarise(count_higher_despair = sum(n())) %>% 
+  arrange(desc(count_higher_despair)) %>% 
+  head(1)
+
+higher_candy_meh <- candy_drop_na_answer %>% 
+  filter(answer == "MEH") %>% 
+  group_by(candy) %>% 
+  summarise(count_higher_meh = sum(n())) %>% 
+  arrange(desc(count_higher_meh)) %>% 
+  head(1) 
+
+bind_rows(
+  c(higher_candy_joy),
+  c(higher_candy_despair),
+  c(higher_candy_meh)
+)
+
+```
+For joy was 'reese_s_peanut_butter_cups' with 7369, for despair was 
+'broken_glow_stick' with 7905 and meh with 1570 was lollipops.
+
+
+#Q5:How many people rated Starburst as despair?
+```{r}
+candy_data_clean %>% 
+  filter(candy == "starburst", answer == "DESPAIR") %>% 
+  summarise(count_starburst_despair = sum(n()))
+```
+There were 1990 people who rated starburst as despair.

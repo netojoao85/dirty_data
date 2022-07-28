@@ -86,3 +86,76 @@ candy_data_clean %>%
   summarise(count_starburst_despair = sum(n()))
 ```
 There were 1990 people who rated starburst as despair.
+
+
+
+
+
+```{r}
+# This function count despair as -1, joy as +1, and meh as 0. As output, it 
+# get higher total score/points by the variables grouped.
+# This function have two arguments:
+#       - data_set:     the name of the data we are using
+#       - grp_variable: the variables that we will group
+
+score_function <- function(data_set, grp_variables){
+  data_set %>% 
+    mutate(score = recode(
+      answer,
+      "JOY"     = 1,
+      "MEH"     = 0,
+      "DESPAIR" = -1)
+    ) %>% 
+    group_by_at (grp_variables) %>% 
+    summarise (count_score = sum(score, na.rm = TRUE)) %>% 
+    slice_max (count_score)
+}
+```
+
+#Q6: What was the most popular candy bar by this rating system for each gender in the dataset ?
+```{r}
+score_function(
+  data_set      = candy_data_clean,
+  grp_variables = vars(gender, candy)
+) %>% 
+  filter(!gender == "NA")
+```
+By gender, the most popular candy was reese_s_peanut_butter_cups for females 
+(768 points) and for males (1443 points). For "I'd rather not say", kit kat got
+62 points and for "other" was twix with 32 points.
+
+
+
+#Q7: What was the most popular candy bar in each year?
+```{r}
+score_function(
+  data_set      = candy_data_clean,
+  grp_variables = vars(year, candy)
+)
+```
+In 2015 and 2017 the most popular candy was "reese_s_peanut_butter_cups" with 
+4375 points and 1403 points. In 2016 was kit_kat with 920 points.
+
+
+
+#Q8: What was the most popular candy bar by this rating for people in US, Canada, UK, and all other countries?
+```{r}
+# was needed to classify the countries that are not USA, UK and Canada as 
+# 'other country'. Our data was saved in a variable called 'candy_country' to be
+# used the function 'score_function()'.
+candy_country <- candy_data_clean %>% 
+  mutate(country = if_else(
+    country %in% c("USA", "UK", "Canada"),
+    country,
+    "other country"))
+
+score_function(
+  data_set      = candy_country,
+  grp_variables = vars(country, candy)
+)
+```
+The most popular candy rating by country rating was:
+ - in Canada, was kit kat with 229 points;
+ - in USA, rolos with 1968 points;
+ - in UK, were lindt truffle and rolos both with 30 points; and
+ - in the other countries presented in our data, "reese_s_peanut_butter_cups" got 1968 points.

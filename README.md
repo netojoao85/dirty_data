@@ -1,4 +1,4 @@
-# Dirty data projetcs - Data cleaning <img src= "https://github.com/netojoao85/dirty_data/blob/main/images/clean_data.png" width = "230" height = "200" align="right" />
+# Dirty data projetcs - Data cleaning <img src= "https://github.com/netojoao85/dirty_data/blob/main/images/clean_data.png" width = "210" height = "180" align="right" />
 
 Worked on a real-life data analysis project by cleaning and analysing data in some messy data sets.     
 
